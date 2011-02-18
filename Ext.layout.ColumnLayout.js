@@ -50,9 +50,10 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 	onLayout: function() {
 		Ext.layout.ColumnLayout.superclass.onLayout.call(this);
 
+		var target = this.target = this.getTarget();
+
 		var styleCfg = this.getStyleCfg();
 
-		var target = this.getTarget();
 		target.setStyle(styleCfg);
 
 		this.prepareItems();
@@ -74,8 +75,13 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 		var styleCfg = {
 			"-webkit-column-gap"   : columnGap,
 			"-webkit-column-rule"  : columnRule.width + " " + columnRule.style + " " + columnRule.color,
-			height: null
 		};
+
+		if (this.target.hasCls("x-scroller")) {
+			styleCfg["min-height"] = null;
+		} else {
+			styleCfg["height"] = null;
+		}
 
 		if (typeof columnCount != "undefined") {
 			styleCfg["-webkit-column-count"] = columnCount;
