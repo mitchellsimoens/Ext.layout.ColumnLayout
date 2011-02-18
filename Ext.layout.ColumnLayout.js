@@ -13,7 +13,18 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 	  * Default: 'x-layout-column'
 	  */
 	targetCls: "x-layout-column",
-
+	/**
+	  * @cfg {String} innerCls
+	  * Default CSS class to be added to the inner div.
+	  * Default: 'x-layout-column-inner'
+	  */
+	innerCls: "x-layout-column-inner",
+	/**
+	  * @cfg {String} innerItemsCls
+	  * Default CSS class to be added to div that encapsulates the items
+	  * Default: 'x-layout-column-inner-items'
+	  */
+	innerItemsCls: "x-layout-column-inner-items",
 	/**
 	  * @cfg {Number} columnCount
 	  * Number of columns. Browser will render items with this many columns.
@@ -52,9 +63,13 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 
 		var target = this.target = this.getTarget();
 
-		var styleCfg = this.getStyleCfg();
+		if (target.hasCls(this.innerCls)) {
+			var itemsWrap = target.child("."+this.innerCls+"-items");
 
-		target.setStyle(styleCfg);
+			var styleCfg = this.getStyleCfg();
+
+			itemsWrap.setStyle(styleCfg);
+		}
 
 		this.prepareItems();
 	},
@@ -75,13 +90,8 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 		var styleCfg = {
 			"-webkit-column-gap"   : columnGap,
 			"-webkit-column-rule"  : columnRule.width + " " + columnRule.style + " " + columnRule.color,
+			width: "100%"
 		};
-
-		if (this.target.hasCls("x-scroller")) {
-			styleCfg["min-height"] = null;
-		} else {
-			styleCfg["height"] = null;
-		}
 
 		if (typeof columnCount != "undefined") {
 			styleCfg["-webkit-column-count"] = columnCount;
@@ -122,6 +132,39 @@ Ext.layout.ColumnLayout = Ext.extend(Ext.layout.ContainerLayout, {
 			item = items[i];
 			item.doComponentLayout();
 		}
+	},
+
+	/**
+	  * @private
+	  */
+	getTarget : function() {
+		var owner = this.owner,
+			innerCt = this.innerCt;
+
+		if (!innerCt) {
+			if (owner.scrollEl) {
+				innerCt = owner.scrollEl.addCls(this.innerCls);
+			} else {
+				innerCt = owner.getTargetEl().createChild({cls: this.innerCls});
+			}
+			this.innerCt = innerCt;
+		}
+
+		return innerCt;
+	},
+
+	/**
+	  * @private
+	  */
+	renderItem: function(item, position, target) {
+		if (target.hasCls(this.innerCls)) {
+			if (target.child("." + this.innerItemsCls) === null) {
+				target.createChild({ cls: this.innerItemsCls });
+			}
+			target = target.child("." + this.innerItemsCls);
+		}
+
+		Ext.layout.ColumnLayout.superclass.renderItem.call(this, item, position, target);
 	}
 });
 
